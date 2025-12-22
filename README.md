@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # gojira
 
 A new Flutter project.

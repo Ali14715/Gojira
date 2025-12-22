@@ -51,4 +51,25 @@ class ApiService {
       );
     }).toList();
   }
+  // Add a new product
+      Future<void> addProduct({
+      required String name,
+      required String category,
+      required double price,
+      required String imageUrl,
+      required String description,
+    }) async {
+      final docRef = _firestore.collection('products').doc();
+
+      await docRef.set({
+        'name': name,
+        'category': category,
+        'price': price,
+        'totalSold': 0,
+        'imageUrl': imageUrl,
+        'description': description,
+      });
+    }
+
 }
+

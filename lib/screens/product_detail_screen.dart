@@ -125,7 +125,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Description (placeholder)
+                  // Description
                   const Text(
                     'Product Description',
                     style: TextStyle(
@@ -136,7 +136,9 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'This is a high-quality ${product.category.toLowerCase()} product. Perfect for your needs with excellent performance and reliability.',
+                    product.description.isNotEmpty
+                        ? product.description
+                        : 'No description available for this product.',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],

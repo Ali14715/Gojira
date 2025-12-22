@@ -119,7 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Expanded(
                         child: _buildMetricCard(
                           'Total Sales',
-                          'Rp.${_totalSales.toStringAsFixed(2)}',
+                          'Rp.${_totalSales.toStringAsFixed(0)}',
                           Icons.attach_money,
                           Colors.green,
                         ),
@@ -256,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           style: const TextStyle(fontSize: 16),
                                         ),
                                         Text(
-                                          'Rp.${entry.value.toStringAsFixed(2)}',
+                                          'Rp.${entry.value.toStringAsFixed(0)}',
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
