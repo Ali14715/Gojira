@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": 
+        "mobilesdk_app_id": "1:219152673252:android:4c68953783a4674f1e3ff1",
         "android_client_info": {
           "package_name": "com.example.gojira"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": 
+          "current_key": "AIzaSyCDartGPplJq1eEw9zIclXNc3EKBwmjdcA"
         }
       ],
       "services": {

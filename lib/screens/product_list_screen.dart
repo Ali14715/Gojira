@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/product.dart';
 import '../services/api_service.dart';
@@ -6,6 +7,7 @@ import '../widgets/product_card.dart';
 import 'product_detail_screen.dart';
 import 'dashboard_screen.dart';
 import 'add_product_screen.dart';
+import 'cart_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -83,12 +85,76 @@ class _ProductListScreenState extends State<ProductListScreen> {
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
+          // Dashboard
           IconButton(
             icon: const Icon(Icons.dashboard, color: Colors.black),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => DashboardScreen()),
             ),
+          ),
+
+          // Cart icon + badge (INI STACK-NYA)
+          Stack(
+            children: [
+              IconButton(
+                icon: Stack(
+                  children: [
+                    const Icon(Icons.shopping_cart),
+
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('carts')
+                            .doc('active_cart')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return const SizedBox();
+                          }
+
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>?;
+                          final items =
+                              data?['items'] as Map<String, dynamic>? ?? {};
+
+                          int totalQty = 0;
+                          for (var entry in items.entries) {
+                            totalQty += (entry.value['qty'] as int);
+                          }
+
+                          if (totalQty == 0) return const SizedBox();
+
+                          return Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              totalQty.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
         iconTheme: const IconThemeData(color: Colors.black),
@@ -218,6 +284,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               child: ProductCard(
                                 product: product,
                                 onSell: () => _sellProduct(product),
+                                onAddToCart: () async {
+                                  await _apiService.addToCart(product.id);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '${product.name} ditambahkan ke keranjang',
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             );
                           },

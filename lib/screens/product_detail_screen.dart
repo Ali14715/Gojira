@@ -60,7 +60,7 @@ class ProductDetailScreen extends StatelessWidget {
             // =========================
             // PRODUCT IMAGE
             // =========================
-            Container(
+            SizedBox(
               height: 300,
               width: double.infinity,
               child: ClipRRect(

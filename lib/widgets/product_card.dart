@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 
+
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onSell;
+  final VoidCallback onAddToCart;
 
-  const ProductCard({super.key, required this.product, required this.onSell});
+  const ProductCard({super.key, required this.product, required this.onSell, required this.onAddToCart,});
 
   @override
   Widget build(BuildContext context) {
@@ -130,26 +132,58 @@ class ProductCard extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: onSell,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+                Row(
+                  children: [
+                    // Add to Cart
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onAddToCart,
+                        icon: const Icon(
+                          Icons.add_shopping_cart,
+                          size: 16,
+                          color: Colors.orange,
+                        ),
+                        label: const Text(
+                          'Cart',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.orange),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
-                    child: const Text(
-                      'Sell Product',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+
+                          // Sell Product
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: onSell,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              child: const Text(
+                                'Sell',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ),
+
+
+                
               ],
             ),
           ),
