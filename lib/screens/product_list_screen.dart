@@ -28,13 +28,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _searchController.addListener(_filterProducts);
   }
 
-  void _loadProducts() async {
+  Future<void> _loadProducts() async {
+    setState(() => _isLoading = true);
+
     try {
       _products = await _apiService.fetchProducts();
     } catch (e) {
       print('Failed to load products: $e');
-      _products = []; // Empty list
+      _products = [];
     }
+
     setState(() {
       _filteredProducts = _products;
       _isLoading = false;
@@ -53,10 +56,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void _sellProduct(Product product) async {
     try {
       await _apiService.sellProduct(product);
-      // Update local list
-      setState(() {
-        product.totalSold += 1;
-      });
+
+      // refresh dari database biar konsisten
+      await _loadProducts();
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Sold ${product.name}')));
@@ -64,7 +67,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       print('Failed to sell product: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to sell product')));
+      ).showSnackBar(const SnackBar(content: Text('Failed to sell product')));
     }
   }
 
@@ -98,7 +101,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             )
           : Column(
               children: [
-                // Search Bar
+                // SEARCH BAR
                 Container(
                   margin: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -115,11 +118,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ),
                   child: TextField(
                     controller: _searchController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Search products...',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
+                      contentPadding: EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 16,
                       ),
@@ -127,7 +130,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ),
                 ),
 
-                // Add Product Button
+                // ADD PRODUCT
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: SizedBox(
@@ -141,9 +144,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ),
                         );
 
-                        // refresh list setelah tambah produk
                         if (result == true) {
-                          _loadProducts();
+                          await _loadProducts();
                         }
                       },
                       icon: const Icon(Icons.add),
@@ -162,10 +164,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ),
                 ),
 
-                // 🔽 JARAK TAMBAHAN
                 const SizedBox(height: 12),
 
-                // Products Grid
+                // PRODUCT GRID
                 Expanded(
                   child: _filteredProducts.isEmpty
                       ? Center(
@@ -199,15 +200,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               ),
                           itemCount: _filteredProducts.length,
                           itemBuilder: (context, index) {
-                            Product product = _filteredProducts[index];
+                            final product = _filteredProducts[index];
+
                             return GestureDetector(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      ProductDetailScreen(product: product),
-                                ),
-                              ),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ProductDetailScreen(product: product),
+                                  ),
+                                );
+
+                                // 🔥 INI KUNCI UTAMA
+                                await _loadProducts();
+                              },
                               child: ProductCard(
                                 product: product,
                                 onSell: () => _sellProduct(product),

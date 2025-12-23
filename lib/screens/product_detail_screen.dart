@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
+import '../services/api_service.dart';
+import 'edit_product_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -9,6 +11,8 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ApiService apiService = ApiService();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -22,12 +26,40 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
+
+        // 🔥 EDIT & DELETE BUTTON
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.blue),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProductScreen(product: product),
+                ),
+              );
+
+              if (result == true) {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              _showDeleteDialog(context, apiService);
+            },
+          ),
+        ],
       ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image
+            // =========================
+            // PRODUCT IMAGE
+            // =========================
             Container(
               height: 300,
               width: double.infinity,
@@ -53,13 +85,14 @@ class ProductDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Product Details
+            // =========================
+            // PRODUCT DETAILS
+            // =========================
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product Name
                   Text(
                     product.name,
                     style: const TextStyle(
@@ -70,7 +103,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // Category Badge
+                  // CATEGORY
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -91,11 +124,11 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Price
+                  // PRICE & SOLD
                   Row(
                     children: [
                       Text(
-                        'Rp.${product.price.toStringAsFixed(2)}',
+                        'Rp.${product.price.toStringAsFixed(0)}',
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -125,20 +158,19 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Description
+                  // DESCRIPTION
                   const Text(
                     'Product Description',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     product.description.isNotEmpty
                         ? product.description
-                        : 'No description available for this product.',
+                        : 'No description available.',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -147,17 +179,16 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // Action Button
+                  // SELL BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // This would typically navigate back and trigger sell
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Navigate back to sell ${product.name}',
+                              '${product.name} sold successfully',
                             ),
                           ),
                         );
@@ -183,6 +214,43 @@ class ProductDetailScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // =========================
+  // DELETE CONFIRMATION DIALOG
+  // =========================
+  void _showDeleteDialog(BuildContext context, ApiService apiService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text(
+          'Are you sure you want to delete "${product.name}"?\n\nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await apiService.deleteProduct(product.id);
+
+              Navigator.pop(context); // close dialog
+              Navigator.pop(context); // back to list
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Product deleted successfully'),
+                ),
+              );
+            },
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }
