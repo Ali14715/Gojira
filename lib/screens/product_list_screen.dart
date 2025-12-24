@@ -239,40 +239,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ),
                 ),
 
-                // ADD PRODUCT
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AddProductScreen(),
-                          ),
-                        );
-
-                        if (result == true) {
-                          await _loadProducts();
-                        }
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text(
-                        'Tambah Produk',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 12),
 
                 // PRODUCT GRID

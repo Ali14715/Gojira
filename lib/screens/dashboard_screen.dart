@@ -4,6 +4,7 @@ import '../models/product.dart';
 import '../models/sale_transaction.dart';
 import '../services/api_service.dart';
 import '../widgets/sales_chart.dart';
+import 'add_product_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -307,6 +308,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: SalesChart(salesData: _salesTrend),
                         ),
                       ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Add Product Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddProductScreen(),
+                          ),
+                        );
+
+                        if (result == true) {
+                          _loadDashboardData();
+                        }
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text(
+                        'Tambah Produk',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
 
