@@ -161,10 +161,7 @@ class ProductDetailScreen extends StatelessWidget {
                   // DESCRIPTION
                   const Text(
                     'Product Description',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -184,14 +181,7 @@ class ProductDetailScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${product.name} sold successfully',
-                            ),
-                          ),
-                        );
+                        _showSellDialog(context, apiService);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
@@ -243,12 +233,56 @@ class ProductDetailScreen extends StatelessWidget {
               Navigator.pop(context); // back to list
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Product deleted successfully'),
-                ),
+                const SnackBar(content: Text('Product deleted successfully')),
               );
             },
             child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================
+  // SELL CONFIRMATION DIALOG
+  // =========================
+  void _showSellDialog(BuildContext context, ApiService apiService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sell Product'),
+        content: Text(
+          'Are you sure you want to sell "${product.name}" for Rp.${product.price.toStringAsFixed(0)}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () async {
+              try {
+                await apiService.sellProduct(product);
+                Navigator.pop(context); // close dialog
+                Navigator.pop(context); // back to list
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${product.name} sold successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                Navigator.pop(context); // close dialog
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to sell ${product.name}: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Sell'),
           ),
         ],
       ),

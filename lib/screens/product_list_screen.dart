@@ -8,6 +8,7 @@ import 'product_detail_screen.dart';
 import 'dashboard_screen.dart';
 import 'add_product_screen.dart';
 import 'cart_screen.dart';
+import 'transaction_history_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -58,19 +59,50 @@ class _ProductListScreenState extends State<ProductListScreen> {
   void _sellProduct(Product product) async {
     try {
       await _apiService.sellProduct(product);
-
       // refresh dari database biar konsisten
       await _loadProducts();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Sold ${product.name}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sold ${product.name}'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       print('Failed to sell product: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to sell product')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to sell product'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
+
+  void _showSellDialog(Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sell Product'),
+        content: Text(
+          'Are you sure you want to sell "${product.name}" for Rp.${product.price.toStringAsFixed(0)}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () {
+              Navigator.pop(context); // close dialog
+              _sellProduct(product);
+            },
+            child: const Text('Sell'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -81,7 +113,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
-          'Retail Analytics',
+          'Gojira Store',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -91,6 +123,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => DashboardScreen()),
+            ),
+          ),
+
+          // History
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.black),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TransactionHistoryScreen(),
+              ),
             ),
           ),
 
@@ -283,16 +326,49 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               },
                               child: ProductCard(
                                 product: product,
-                                onSell: () => _sellProduct(product),
+                                onSell: () => _showSellDialog(product),
                                 onAddToCart: () async {
                                   await _apiService.addToCart(product.id);
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '${product.name} ditambahkan ke keranjang',
-                                      ),
-                                    ),
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      Future.delayed(
+                                        const Duration(seconds: 2),
+                                        () {
+                                          if (Navigator.of(context).canPop()) {
+                                            Navigator.of(context).pop();
+                                          }
+                                        },
+                                      );
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.green[50],
+                                        content: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green,
+                                              size: 40,
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Text(
+                                                '${product.name} ditambahkan ke keranjang',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               ),

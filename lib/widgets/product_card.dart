@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 
-
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onSell;
   final VoidCallback onAddToCart;
 
-  const ProductCard({super.key, required this.product, required this.onSell, required this.onAddToCart,});
+  const ProductCard({
+    super.key,
+    required this.product,
+    required this.onSell,
+    required this.onAddToCart,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -159,31 +163,28 @@ class ProductCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
 
-                          // Sell Product
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: onSell,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                              ),
-                              child: const Text(
-                                'Sell',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                    // Sell Product
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: onSell,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ],
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        child: const Text(
+                          'Sell',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-
-
-                
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

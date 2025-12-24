@@ -45,13 +45,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _computeData() {
     // Total sales
-    _totalSales = _transactions.fold(0.0, (sum, t) => sum + t.price);
+    _totalSales = _transactions.fold(0.0, (sum, t) => sum + t.totalPrice);
 
     // Sales per category
     _salesPerCategory = {};
     for (var t in _transactions) {
-      _salesPerCategory[t.category] =
-          (_salesPerCategory[t.category] ?? 0) + t.price;
+      for (var item in t.items) {
+        _salesPerCategory[item.category] =
+            (_salesPerCategory[item.category] ?? 0) +
+            (item.price * item.quantity);
+      }
     }
 
     // Best selling product
@@ -69,11 +72,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       double sales = _transactions
           .where(
             (t) =>
-                t.date.year == day.year &&
-                t.date.month == day.month &&
-                t.date.day == day.day,
+                t.createdAt.year == day.year &&
+                t.createdAt.month == day.month &&
+                t.createdAt.day == day.day,
           )
-          .fold(0.0, (sum, t) => sum + t.price);
+          .fold(0.0, (sum, t) => sum + t.totalPrice);
       _salesTrend[6 - i] = sales; // Reverse for chart (oldest to newest)
     }
   }

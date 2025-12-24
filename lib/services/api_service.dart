@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../models/sale_transaction.dart';
+import '../models/transaction_item.dart';
 
 class ApiService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -70,16 +71,22 @@ class ApiService {
   // =========================
   // SELL PRODUCT (TRANSACTION)
   // =========================
-  Future<void> sellProduct(Product product) async {
+  Future<void> sellProduct(Product product, {int quantity = 1}) async {
     final transRef = _firestore.collection('transactions').doc();
 
     SaleTransaction transaction = SaleTransaction(
       id: transRef.id,
-      productId: product.id,
-      productName: product.name,
-      category: product.category,
-      price: product.price,
-      date: DateTime.now(),
+      createdAt: DateTime.now(),
+      items: [
+        TransactionItem(
+          productId: product.id,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          quantity: quantity,
+        ),
+      ],
+      totalPrice: product.price * quantity,
     );
 
     // save transaction
@@ -87,7 +94,7 @@ class ApiService {
 
     // update total sold
     await _firestore.collection('products').doc(product.id).update({
-      'totalSold': FieldValue.increment(1),
+      'totalSold': FieldValue.increment(quantity),
     });
   }
 
@@ -95,13 +102,10 @@ class ApiService {
   // FETCH TRANSACTIONS
   // =========================
   Future<List<SaleTransaction>> fetchTransactions() async {
-    QuerySnapshot snapshot = await _firestore.collection('transactions').get();
+    final snapshot = await _firestore.collection('transactions').get();
 
     return snapshot.docs.map((doc) {
-      return SaleTransaction.fromMap(
-        doc.data() as Map<String, dynamic>,
-        doc.id,
-      );
+      return SaleTransaction.fromMap(doc.data(), doc.id);
     }).toList();
   }
 
@@ -197,49 +201,45 @@ class ApiService {
   }
 
   // =========================
-  // CHECKOUT
+  // CHECKOUT (1 transaksi)
   // =========================
   Future<void> checkout() async {
-    final cartSnapshot = await _firestore.collection('cart').get();
+    final cartItems = await fetchCart();
 
-    for (var doc in cartSnapshot.docs) {
-      final data = doc.data();
-      final productId = data['productId'];
-      final quantity = data['quantity'];
+    if (cartItems.isEmpty) return;
 
-      final productDoc = await _firestore
-          .collection('products')
-          .doc(productId)
-          .get();
+    double totalPrice = 0;
+    List<Map<String, dynamic>> items = [];
 
-      final product = Product.fromMap(
-        productDoc.data() as Map<String, dynamic>,
-        productDoc.id,
-      );
+    for (var cartItem in cartItems) {
+      totalPrice += cartItem.product.price * cartItem.quantity;
 
-      // buat transaksi
-      await _firestore.collection('transactions').add({
-        'productId': product.id,
-        'productName': product.name,
-        'category': product.category,
-        'price': product.price,
-        'quantity': quantity,
-        'date': Timestamp.now(),
+      items.add({
+        'productId': cartItem.product.id,
+        'name': cartItem.product.name,
+        'category': cartItem.product.category,
+        'price': cartItem.product.price,
+        'quantity': cartItem.quantity,
       });
 
-      // update totalSold
-      await _firestore.collection('products').doc(product.id).update({
-        'totalSold': FieldValue.increment(quantity),
+      // update total sold
+      await _firestore.collection('products').doc(cartItem.product.id).update({
+        'totalSold': FieldValue.increment(cartItem.quantity),
       });
     }
 
-    // kosongkan cart
-    final batch = _firestore.batch();
-    for (var doc in cartSnapshot.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
+    // simpan 1 transaksi
+    await _firestore.collection('transactions').add({
+      'createdAt': Timestamp.now(),
+      'totalPrice': totalPrice,
+      'items': items,
+    });
+
+    // Clear cart
+    await _firestore.collection('carts').doc('active_cart').delete();
   }
+  // =========================
+  // UPDATE CART QUANTITY (ALTERNATIVE)
 
   Future<void> updateCartQusntity({
     required String cartId,
