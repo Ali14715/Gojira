@@ -16,16 +16,20 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
+            color: isDark
+                ? Colors.black.withOpacity(0.4)
+                : Colors.grey.withOpacity(0.1),
+            spreadRadius: isDark ? 0 : 1,
+            blurRadius: isDark ? 6 : 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -63,7 +67,7 @@ class ProductCard extends StatelessWidget {
                       },
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey[200],
+                          color: isDark ? Colors.grey[800] : Colors.grey[200],
                           child: const Icon(
                             Icons.broken_image,
                             size: 40,
@@ -73,7 +77,7 @@ class ProductCard extends StatelessWidget {
                       },
                     )
                   : Container(
-                      color: Colors.grey[200],
+                      color: isDark ? Colors.grey[800] : Colors.grey[200],
                       child: const Icon(
                         Icons.image_not_supported,
                         size: 40,
@@ -101,7 +105,10 @@ class ProductCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   product.category,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                 ),
                 const SizedBox(height: 8),
                 // Harga
@@ -122,14 +129,16 @@ class ProductCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
+                    color: isDark
+                        ? Colors.blue.withOpacity(0.2)
+                        : Colors.blue[50],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     'Sold: ${product.totalSold}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.blue[700],
+                      color: isDark ? Colors.blue[200] : Colors.blue[700],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -175,7 +184,7 @@ class ProductCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                         child: const Text(
-                          'Sell',
+                          'Buy',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,

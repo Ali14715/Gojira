@@ -124,6 +124,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Get unique categories
     final categories = {
       'All',
@@ -131,18 +133,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     };
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Transaction History',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text('Transaction History'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.orange),
             onPressed: _loadTransactions,
           ),
         ],
@@ -157,15 +154,20 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               children: [
                 // FILTERS
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 8,
+                        color: isDark
+                            ? Colors.black.withOpacity(0.4)
+                            : Colors.grey.withOpacity(0.1),
+                        spreadRadius: isDark ? 0 : 1,
+                        blurRadius: isDark ? 6 : 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -190,14 +192,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.grey[50],
+                                  fillColor: isDark
+                                      ? const Color(0xFF1E1E1E)
+                                      : Colors.grey[50],
                                 ),
                               ),
                             ),
                             IconButton(
                               icon: Icon(
-                                _showFilters ? Icons.filter_list_off : Icons.filter_list,
-                                color: Colors.black,
+                                _showFilters
+                                    ? Icons.filter_list_off
+                                    : Icons.filter_list,
+                                color: isDark ? Colors.white : Colors.black,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -223,7 +229,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: isDark
+                                        ? const Color(0xFF1E1E1E)
+                                        : Colors.grey[50],
                                   ),
                                   items: categories.map((category) {
                                     return DropdownMenuItem(
@@ -245,21 +253,22 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: _selectDateRange,
-                                  icon: const Icon(
-                                    Icons.date_range,
-                                    color: Colors.black,
-                                  ),
+                                  icon: const Icon(Icons.date_range),
                                   label: Text(
                                     _startDate != null && _endDate != null
                                         ? '${_startDate!.day}/${_startDate!.month} - ${_endDate!.day}/${_endDate!.month}'
                                         : 'Select Date Range',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.black,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
+                                    backgroundColor: isDark
+                                        ? const Color(0xFF1E1E1E)
+                                        : Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -301,14 +310,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               Icon(
                                 Icons.receipt_long_outlined,
                                 size: 64,
-                                color: Colors.grey[400],
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400],
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'No transactions found',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.grey[600],
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
                                 ),
                               ),
                             ],
@@ -341,7 +354,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     Text(
                                       '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year}',
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: isDark
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600],
                                         fontSize: 14,
                                       ),
                                     ),
@@ -349,7 +364,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                 ),
                                 subtitle: Text(
                                   '${transaction.items.length} item(s)',
-                                  style: TextStyle(color: Colors.grey[600]),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
                                 ),
                                 children: transaction.items.map((item) {
                                   return ListTile(

@@ -3,12 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/product.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/product_card.dart';
 import 'product_detail_screen.dart';
 import 'dashboard_screen.dart';
-import 'add_product_screen.dart';
+
 import 'cart_screen.dart';
 import 'transaction_history_screen.dart';
+import 'profile_screen.dart';
+import 'auth_wrapper.dart';
+import '../theme_controller.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -19,6 +23,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   bool _isLoading = true;
@@ -27,8 +32,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts();
-    _searchController.addListener(_filterProducts);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_authService.currentUser == null) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const AuthWrapper()),
+          (route) => false,
+        );
+      } else {
+        _loadProducts();
+        _searchController.addListener(_filterProducts);
+      }
+    });
   }
 
   Future<void> _loadProducts() async {
@@ -83,7 +97,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sell Product'),
+        title: const Text('Buy Product'),
         content: Text(
           'Are you sure you want to sell "${product.name}" for Rp.${product.price.toStringAsFixed(0)}?',
         ),
@@ -98,7 +112,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               Navigator.pop(context); // close dialog
               _sellProduct(product);
             },
-            child: const Text('Sell'),
+            child: const Text('Buy'),
           ),
         ],
       ),
@@ -107,100 +121,162 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: const Text(
           'Gojira Store',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
         ),
         actions: [
-          // Dashboard
           IconButton(
-            icon: const Icon(Icons.dashboard, color: Colors.black),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => DashboardScreen()),
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.orange,
             ),
-          ),
-
-          // History
-          IconButton(
-            icon: const Icon(Icons.history, color: Colors.black),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const TransactionHistoryScreen(),
-              ),
-            ),
-          ),
-
-          // Cart icon + badge (INI STACK-NYA)
-          Stack(
-            children: [
-              IconButton(
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.shopping_cart),
-
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('carts')
-                            .doc('active_cart')
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData || !snapshot.data!.exists) {
-                            return const SizedBox();
-                          }
-
-                          final data =
-                              snapshot.data!.data() as Map<String, dynamic>?;
-                          final items =
-                              data?['items'] as Map<String, dynamic>? ?? {};
-
-                          int totalQty = 0;
-                          for (var entry in items.entries) {
-                            totalQty += (entry.value['qty'] as int);
-                          }
-
-                          if (totalQty == 0) return const SizedBox();
-
-                          return Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              totalQty.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CartScreen()),
-                  );
-                },
-              ),
-            ],
+            onPressed: ThemeController.toggleTheme,
           ),
         ],
-        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark
+              ? (Theme.of(context).bottomAppBarTheme.color ??
+                    const Color(0xFF121212))
+              : Colors.white,
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: [
+                // Dashboard
+                _BottomNavItem(
+                  icon: Icons.dashboard,
+                  label: 'Dashboard',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => DashboardScreen()),
+                    );
+                  },
+                ),
+
+                // History
+                _BottomNavItem(
+                  icon: Icons.receipt_long,
+                  label: 'History',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TransactionHistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                // Cart with badge
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                      );
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        StreamBuilder<DocumentSnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('carts')
+                              .doc('active_cart')
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            Widget icon = const Icon(
+                              Icons.shopping_cart,
+                              color: Colors.orange,
+                            );
+
+                            if (!snapshot.hasData || !snapshot.data!.exists) {
+                              return icon;
+                            }
+
+                            final data =
+                                snapshot.data!.data() as Map<String, dynamic>?;
+                            final items =
+                                data?['items'] as Map<String, dynamic>? ?? {};
+
+                            int totalQty = 0;
+                            for (var entry in items.entries) {
+                              totalQty += (entry.value['qty'] as int);
+                            }
+
+                            if (totalQty == 0) return icon;
+
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                icon,
+                                Positioned(
+                                  right: -6,
+                                  top: -4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      totalQty.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Cart', style: TextStyle(fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Profile
+                _BottomNavItem(
+                  icon: Icons.person,
+                  label: 'Profile',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(
@@ -344,6 +420,39 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color iconColor = Colors.orange;
+    final Color textColor = isDark ? Colors.white70 : Colors.black;
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: iconColor),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(fontSize: 11, color: textColor)),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -12,25 +12,21 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ApiService apiService = ApiService();
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: Text(
           product.name,
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
 
         // 🔥 EDIT & DELETE BUTTON
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.blue),
+            icon: const Icon(Icons.edit, color: Colors.orange),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -45,7 +41,7 @@ class ProductDetailScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.orange),
             onPressed: () {
               _showDeleteDialog(context, apiService);
             },
@@ -73,7 +69,7 @@ class ProductDetailScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: Colors.grey[200],
+                      color: isDark ? Colors.grey[800] : Colors.grey[200],
                       child: const Icon(
                         Icons.broken_image,
                         size: 80,
@@ -98,7 +94,6 @@ class ProductDetailScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -170,7 +165,7 @@ class ProductDetailScreen extends StatelessWidget {
                         : 'No description available.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: isDark ? Colors.grey[300] : Colors.grey[600],
                       height: 1.5,
                     ),
                   ),
@@ -191,7 +186,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        'Sell This Product',
+                        'Buy This Product',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -250,7 +245,7 @@ class ProductDetailScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sell Product'),
+        title: const Text('Buy Product'),
         content: Text(
           'Are you sure you want to sell "${product.name}" for Rp.${product.price.toStringAsFixed(0)}?',
         ),
@@ -282,7 +277,7 @@ class ProductDetailScreen extends StatelessWidget {
                 );
               }
             },
-            child: const Text('Sell'),
+            child: const Text('Buy'),
           ),
         ],
       ),

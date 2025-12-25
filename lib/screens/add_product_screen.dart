@@ -42,8 +42,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Produk'),
-        backgroundColor: Colors.orange,
+        elevation: 0,
+        title: const Text(
+          'Tambah Produk',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.orange),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

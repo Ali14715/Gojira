@@ -84,17 +84,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Analytics Dashboard',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(elevation: 0, title: const Text('Analytics Dashboard')),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
@@ -109,11 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Header
                   const Text(
                     'Business Overview',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
 
@@ -168,13 +158,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 8,
+                          color: isDark
+                              ? Colors.black.withOpacity(0.4)
+                              : Colors.grey.withOpacity(0.1),
+                          spreadRadius: isDark ? 0 : 1,
+                          blurRadius: isDark ? 6 : 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -203,7 +195,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
                           ),
                         ),
                       ],
@@ -216,13 +207,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 8,
+                          color: isDark
+                              ? Colors.black.withOpacity(0.4)
+                              : Colors.grey.withOpacity(0.1),
+                          spreadRadius: isDark ? 0 : 1,
+                          blurRadius: isDark ? 6 : 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -239,9 +232,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(height: 16),
                         _salesPerCategory.isEmpty
-                            ? const Text(
+                            ? Text(
                                 'No sales data available',
-                                style: TextStyle(color: Colors.grey),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey,
+                                ),
                               )
                             : Column(
                                 children: _salesPerCategory.entries.map((
@@ -281,13 +278,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 8,
+                          color: isDark
+                              ? Colors.black.withOpacity(0.4)
+                              : Colors.grey.withOpacity(0.1),
+                          spreadRadius: isDark ? 0 : 1,
+                          blurRadius: isDark ? 6 : 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -360,13 +359,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.4)
+                : Colors.grey.withOpacity(0.1),
+            spreadRadius: Theme.of(context).brightness == Brightness.dark
+                ? 0
+                : 1,
+            blurRadius: Theme.of(context).brightness == Brightness.dark ? 6 : 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -386,7 +391,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[400]
+                  : Colors.grey[600],
+            ),
             textAlign: TextAlign.center,
           ),
         ],
