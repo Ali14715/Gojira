@@ -3,12 +3,14 @@ import 'transaction_item.dart';
 
 class SaleTransaction {
   final String id;
+  final String userId;
   final DateTime createdAt;
   final List<TransactionItem> items;
   final double totalPrice;
 
   SaleTransaction({
     required this.id,
+    required this.userId,
     required this.createdAt,
     required this.items,
     required this.totalPrice,
@@ -17,6 +19,7 @@ class SaleTransaction {
   factory SaleTransaction.fromMap(Map<String, dynamic> map, String id) {
     return SaleTransaction(
       id: id,
+      userId: (map['userId'] ?? '') as String,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       totalPrice: (map['totalPrice'] as num).toDouble(),
       items: (map['items'] as List)
@@ -27,6 +30,7 @@ class SaleTransaction {
 
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId,
       'createdAt': Timestamp.fromDate(createdAt),
       'totalPrice': totalPrice,
       'items': items.map((e) => e.toMap()).toList(),

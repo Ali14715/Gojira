@@ -192,11 +192,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 // Cart with badge
                 Expanded(
                   child: InkWell(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const CartScreen()),
                       );
+                      // Refresh products so Sold indicator matches latest totals
+                      await _loadProducts();
                     },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

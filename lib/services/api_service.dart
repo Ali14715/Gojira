@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../models/sale_transaction.dart';
@@ -7,6 +7,7 @@ import '../models/transaction_item.dart';
 
 class ApiService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // =========================
   // FETCH ALL PRODUCTS
@@ -72,10 +73,16 @@ class ApiService {
   // SELL PRODUCT (TRANSACTION)
   // =========================
   Future<void> sellProduct(Product product, {int quantity = 1}) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
     final transRef = _firestore.collection('transactions').doc();
 
     SaleTransaction transaction = SaleTransaction(
       id: transRef.id,
+      userId: user.uid,
       createdAt: DateTime.now(),
       items: [
         TransactionItem(
@@ -102,7 +109,15 @@ class ApiService {
   // FETCH TRANSACTIONS
   // =========================
   Future<List<SaleTransaction>> fetchTransactions() async {
-    final snapshot = await _firestore.collection('transactions').get();
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    final snapshot = await _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: user.uid)
+        .get();
 
     return snapshot.docs.map((doc) {
       return SaleTransaction.fromMap(doc.data(), doc.id);
@@ -204,6 +219,11 @@ class ApiService {
   // CHECKOUT (1 transaksi)
   // =========================
   Future<void> checkout() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
     final cartItems = await fetchCart();
 
     if (cartItems.isEmpty) return;
@@ -230,6 +250,7 @@ class ApiService {
 
     // simpan 1 transaksi
     await _firestore.collection('transactions').add({
+      'userId': user.uid,
       'createdAt': Timestamp.now(),
       'totalPrice': totalPrice,
       'items': items,

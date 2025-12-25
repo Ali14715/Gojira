@@ -33,8 +33,6 @@ class _AuthScreenState extends State<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -355,6 +353,26 @@ class _AuthScreenState extends State<AuthScreen>
                   break;
                 case 'invalid-email':
                   message = 'Format email tidak valid.';
+                  break;
+                default:
+                  message =
+                      'Registrasi gagal: ${e.message ?? 'Terjadi kesalahan.'}';
+              }
+
+              if (mounted) {
+                _showAuthDialog(context, message: message, success: false);
+              }
+            } on FirebaseException catch (e) {
+              // Commonly thrown by Firestore (e.g., permission-denied).
+              String message;
+              switch (e.code) {
+                case 'permission-denied':
+                  message =
+                      'Registrasi gagal menyimpan data user. Cek Firestore rules untuk koleksi users.';
+                  break;
+                case 'unavailable':
+                  message =
+                      'Registrasi gagal karena Firestore sedang tidak tersedia. Coba lagi.';
                   break;
                 default:
                   message =

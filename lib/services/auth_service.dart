@@ -3,42 +3,58 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
 
 class AuthService {
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? get currentUser => _auth.currentUser;
 
-  // =========================
+  // ======================
   // REGISTER
-  // =========================
+  // ======================
   Future<void> register({
     required String name,
     required String email,
     required String password,
   }) async {
-    final cred = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      print('REGISTER START');
 
-    AppUser user = AppUser(
-      uid: cred.user!.uid,
-      email: email,
-      name: name,
-      createdAt: DateTime.now(),
-    );
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    await _firestore.collection('users').doc(user.uid).set(user.toMap());
-    // Sign out immediately so the user must login after registration.
-    // This prevents automatic login on createUserWithEmailAndPassword.
-    await _auth.signOut();
+      final uid = cred.user!.uid;
+      print('AUTH CREATED UID: $uid');
+
+      await _firestore.collection('users').doc(uid).set({
+        'uid': uid,
+        'name': name,
+        'email': email,
+        'createdAt': Timestamp.now(),
+      });
+
+      print('FIRESTORE USER SAVED');
+
+      await _auth.signOut();
+      print('LOGOUT SUCCESS');
+    } catch (e, s) {
+      print('REGISTER ERROR: $e');
+      print(s);
+      rethrow;
+    }
   }
 
   // =========================
   // LOGIN
   // =========================
   Future<void> login({required String email, required String password}) async {
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    final cred = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    // Ensure profile fields like displayName are up-to-date.
+    await cred.user?.reload();
   }
 
   // GET PROFILE
@@ -48,18 +64,22 @@ class AuthService {
       throw Exception('User not logged in');
     }
 
-    final docRef = _firestore.collection('users').doc(user.uid);
+    await user.reload();
+    final freshUser = currentUser!;
+    final docRef = _firestore.collection('users').doc(freshUser.uid);
+
     var snap = await docRef.get();
 
-    // If profile document doesn't exist yet (e.g. old accounts), create it.
-    if (!snap.exists || snap.data() == null) {
-      final appUser = AppUser(
-        uid: user.uid,
-        email: user.email ?? '',
-        name: user.displayName ?? 'User',
-        createdAt: DateTime.now(),
-      );
-      await docRef.set(appUser.toMap());
+    // ✅ HANYA AUTO-CREATE JIKA AKUN LAMA
+    if (!snap.exists) {
+      final displayName = (freshUser.displayName ?? '').trim();
+
+      await docRef.set({
+        'email': freshUser.email ?? '',
+        'createdAt': Timestamp.now(),
+        if (displayName.isNotEmpty) 'name': displayName,
+      });
+
       snap = await docRef.get();
     }
 
