@@ -187,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   if (_editing)
                     DropdownButtonFormField<String>(
-                      value: _gender,
+                      initialValue: _gender,
                       decoration: const InputDecoration(
                         labelText: 'Jenis Kelamin',
                         border: OutlineInputBorder(),

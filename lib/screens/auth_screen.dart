@@ -77,7 +77,7 @@ class _AuthScreenState extends State<AuthScreen>
                       ).copyWith(dividerColor: Colors.transparent),
                       child: TabBar(
                         controller: _tabController,
-                        overlayColor: const MaterialStatePropertyAll(
+                        overlayColor: const WidgetStatePropertyAll(
                           Colors.transparent,
                         ),
                         splashFactory: NoSplash.splashFactory,

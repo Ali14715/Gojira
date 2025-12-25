@@ -223,7 +223,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               // Category dropdown
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: _selectedCategory,
+                                  initialValue: _selectedCategory,
                                   decoration: InputDecoration(
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -253,7 +253,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: _selectDateRange,
-                                  icon: const Icon(Icons.date_range),
+                                  icon: Icon(
+                                    Icons.date_range,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
                                   label: Text(
                                     _startDate != null && _endDate != null
                                         ? '${_startDate!.day}/${_startDate!.month} - ${_endDate!.day}/${_endDate!.month}'
@@ -284,7 +287,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             width: double.infinity,
                             child: TextButton(
                               onPressed: _clearFilters,
-                              child: const Text('Clear Filters'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.orange,
@@ -292,6 +294,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
+                              child: const Text('Clear Filters'),
                             ),
                           ),
                         ],
