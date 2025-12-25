@@ -122,6 +122,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = _authService.currentUser;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -203,60 +204,64 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        StreamBuilder<DocumentSnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('carts')
-                              .doc('active_cart')
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            Widget icon = const Icon(
-                              Icons.shopping_cart,
-                              color: Colors.orange,
-                            );
+                        if (user == null)
+                          const Icon(Icons.shopping_cart, color: Colors.orange)
+                        else
+                          StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('carts')
+                                .doc(user.uid)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              Widget icon = const Icon(
+                                Icons.shopping_cart,
+                                color: Colors.orange,
+                              );
 
-                            if (!snapshot.hasData || !snapshot.data!.exists) {
-                              return icon;
-                            }
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return icon;
+                              }
 
-                            final data =
-                                snapshot.data!.data() as Map<String, dynamic>?;
-                            final items =
-                                data?['items'] as Map<String, dynamic>? ?? {};
+                              final data =
+                                  snapshot.data!.data()
+                                      as Map<String, dynamic>?;
+                              final items =
+                                  data?['items'] as Map<String, dynamic>? ?? {};
 
-                            int totalQty = 0;
-                            for (var entry in items.entries) {
-                              totalQty += (entry.value['qty'] as int);
-                            }
+                              int totalQty = 0;
+                              for (var entry in items.entries) {
+                                totalQty += (entry.value['qty'] as int);
+                              }
 
-                            if (totalQty == 0) return icon;
+                              if (totalQty == 0) return icon;
 
-                            return Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                icon,
-                                Positioned(
-                                  right: -6,
-                                  top: -4,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      totalQty.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  icon,
+                                  Positioned(
+                                    right: -6,
+                                    top: -4,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        totalQty.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                                ],
+                              );
+                            },
+                          ),
                         const SizedBox(height: 4),
                         const Text('Cart', style: TextStyle(fontSize: 11)),
                       ],

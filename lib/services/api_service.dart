@@ -128,10 +128,12 @@ class ApiService {
   // FETCH CART ITEMS
   // =========================
   Future<List<CartItem>> fetchCart() async {
-    final cartSnap = await _firestore
-        .collection('carts')
-        .doc('active_cart')
-        .get();
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    final cartSnap = await _firestore.collection('carts').doc(user.uid).get();
 
     if (!cartSnap.exists) return [];
 
@@ -159,7 +161,12 @@ class ApiService {
   // ADD TO CART
   // =========================
   Future<void> addToCart(String productId) async {
-    final cartRef = _firestore.collection('carts').doc('active_cart');
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    final cartRef = _firestore.collection('carts').doc(user.uid);
 
     await _firestore.runTransaction((tx) async {
       final snap = await tx.get(cartRef);
@@ -187,7 +194,12 @@ class ApiService {
     required String productId,
     required int quantity,
   }) async {
-    final cartRef = _firestore.collection('carts').doc('active_cart');
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    final cartRef = _firestore.collection('carts').doc(user.uid);
 
     await _firestore.runTransaction((tx) async {
       final snap = await tx.get(cartRef);
@@ -257,7 +269,7 @@ class ApiService {
     });
 
     // Clear cart
-    await _firestore.collection('carts').doc('active_cart').delete();
+    await _firestore.collection('carts').doc(user.uid).delete();
   }
   // =========================
   // UPDATE CART QUANTITY (ALTERNATIVE)
